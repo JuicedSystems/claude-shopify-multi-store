@@ -1,0 +1,33 @@
+{
+  "//": "Copy this file to ~/.shopify-multi-store/stores.json and fill in your stores.",
+  "//2": "On Windows that path is C:\\Users\\<you>\\.shopify-multi-store\\stores.json",
+  "//3": "Never commit the real file — it holds app credentials.",
+  "//4": "PREFERRED (2026+): clientId + clientSecret from the Shopify Dev Dashboard app.",
+  "//5": "The connector mints and auto-refreshes 24h access tokens for you.",
+
+  "defaultApiVersion": "2025-10",
+
+  "stores": [
+    {
+      "name": "keg-smiths",
+      "label": "Keg Smiths (production)",
+      "shopDomain": "keg-smiths.myshopify.com",
+      "clientId": "your-dev-dashboard-app-client-id",
+      "clientSecret": "shpss_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    },
+    {
+      "name": "store-two",
+      "label": "Second Store",
+      "shopDomain": "my-second-store.myshopify.com",
+      "clientId": "another-client-id",
+      "clientSecret": "shpss_yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy",
+      "apiVersion": "2025-10"
+    },
+    {
+      "//": "LEGACY alternative — only if you already have a shpat_ token.",
+      "name": "old-store",
+      "shopDomain": "legacy.myshopify.com",
+      "adminAccessToken": "shpat_zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz"
+    }
+  ]
+}

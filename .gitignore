@@ -1,0 +1,7 @@
+# Never commit real store credentials
+stores.json
+**/stores.json
+
+# Node
+node_modules/
+npm-debug.log*

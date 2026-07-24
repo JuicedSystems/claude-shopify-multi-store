@@ -1,0 +1,16 @@
+{
+  "name": "shopify-multi-store-mcp",
+  "version": "1.0.0",
+  "description": "Zero-dependency MCP server connecting multiple Shopify stores via Admin API tokens, with a required per-tool store selector so Claude never targets the wrong shop.",
+  "type": "module",
+  "main": "server.js",
+  "bin": {
+    "shopify-multi-store-mcp": "server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node server.js"
+  }
+}

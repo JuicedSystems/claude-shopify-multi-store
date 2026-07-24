@@ -1,0 +1,15 @@
+{
+  "name": "juiced-systems",
+  "owner": {
+    "name": "Juiced Systems",
+    "email": "dylan@juicedsystems.com"
+  },
+  "description": "Juiced Systems Claude plugins.",
+  "plugins": [
+    {
+      "name": "shopify-multi-store",
+      "source": "./",
+      "description": "Connect multiple Shopify stores with a required per-tool store selector so Claude never targets the wrong shop."
+    }
+  ]
+}

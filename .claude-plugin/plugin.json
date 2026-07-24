@@ -1,0 +1,18 @@
+{
+  "name": "shopify-multi-store",
+  "displayName": "Shopify Multi-Store Connector",
+  "description": "Connect any number of Shopify stores at once. Every tool requires you to name the store, so Claude never pulls up the wrong shop when you move between projects.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Juiced Systems",
+    "email": "dylan@juicedsystems.com"
+  },
+  "license": "MIT",
+  "keywords": ["shopify", "ecommerce", "multi-store", "admin-api", "mcp"],
+  "mcpServers": {
+    "shopify-multi-store": {
+      "command": "node",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/mcp/server.js"]
+    }
+  }
+}
