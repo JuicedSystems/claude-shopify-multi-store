@@ -18,10 +18,10 @@ between projects.
 
 ## 1. Install the plugin
 
-From the directory that contains this repo (it doubles as a local marketplace):
+In Claude, add this repo as a marketplace, then install the plugin from it:
 
 ```bash
-/plugin marketplace add ./shopify-multi-store
+/plugin marketplace add JuicedSystems/claude-shopify-multi-store
 ```
 
 ```bash
@@ -33,6 +33,9 @@ From the directory that contains this repo (it doubles as a local marketplace):
 ```
 
 > Requires Node.js 18+ on your PATH (`node --version`).
+>
+> Developing locally instead? Point the marketplace at your local checkout:
+> `/plugin marketplace add ./claude-shopify-multi-store`
 
 ## 2. Get credentials for each store (2026 flow)
 
