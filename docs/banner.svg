@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="300" viewBox="0 0 1200 300" role="img" aria-label="Shopify Multi-Store Connector for Claude: every tool names its store">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#14181f"/><stop offset="1" stop-color="#1c2330"/></linearGradient>
+    <clipPath id="c"><rect width="1200" height="300" rx="18"/></clipPath>
+  </defs>
+  <g clip-path="url(#c)">
+    <rect width="1200" height="300" fill="url(#bg)"/>
+    <rect width="1200" height="6" fill="#95bf47"/>
+    <!-- hub and spokes: one connector, several stores -->
+    <g stroke="#95bf47" stroke-width="2.5" stroke-opacity="0.7" fill="none">
+      <path d="M150 150 L70 80"/><path d="M150 150 L60 160"/><path d="M150 150 L85 235"/><path d="M150 150 L230 150" stroke="#d97757"/>
+    </g>
+    <g fill="#1c2330" stroke="#95bf47" stroke-width="3">
+      <rect x="46" y="58" width="44" height="40" rx="8"/><rect x="36" y="140" width="44" height="40" rx="8"/><rect x="62" y="215" width="44" height="40" rx="8"/>
+    </g>
+    <g fill="#95bf47"><path d="M56 70h24l-3 18h-18z"/><path d="M46 152h24l-3 18h-18z"/><path d="M72 227h24l-3 18h-18z"/></g>
+    <circle cx="150" cy="150" r="26" fill="#d97757"/>
+    <circle cx="150" cy="150" r="10" fill="#14181f"/>
+    <circle cx="236" cy="150" r="8" fill="#d97757"/>
+    <text x="290" y="128" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="56" font-weight="700" fill="#f4f5f7">Shopify Multi-Store Connector</text>
+    <text x="292" y="176" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="26" fill="#b6bdc9">Many Shopify stores, one Claude plugin. Every tool names its store.</text>
+    <text x="292" y="226" font-family="Consolas, Menlo, monospace" font-size="18" fill="#95bf47">store: "keg-smiths" | "store-two"   ·   19 tools   ·   zero dependencies</text>
+  </g>
+</svg>

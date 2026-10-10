@@ -1,43 +1,62 @@
-# Shopify Multi-Store Connector (Claude plugin)
+<div align="center">
 
-Connect **any number of Shopify stores** to Claude at once. Every tool requires you to
-name the store it should act on, so Claude can't pull up the wrong shop when you jump
-between projects.
+<img src="docs/banner.svg" width="100%" alt="Shopify Multi-Store Connector for Claude">
 
-- **Auth: Dev Dashboard client credentials** — paste each store app's Client ID + Secret
-  (`shpss_…`) once; the connector mints and auto-refreshes 24h access tokens for you. No OAuth
-  redirect, no callback server. (Legacy `shpat_` access tokens still work too.)
-- **The anti-confusion guardrail:** the `store` argument on every tool is an *enum* of your
-  configured store names. Claude physically cannot call a tool without naming a store, and
-  cannot invent a store that isn't configured.
-- **Zero dependencies:** the MCP server is plain Node (18+). No `npm install`, no bundled
-  `node_modules`. It works the moment the plugin is installed.
-- **Read + write helpers + a raw GraphQL escape hatch** for everything else.
+[![CI](https://github.com/JuicedSystems/claude-shopify-multi-store/actions/workflows/ci.yml/badge.svg)](https://github.com/JuicedSystems/claude-shopify-multi-store/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-2ea44f.svg)](LICENSE)
+[![Node 18+](https://img.shields.io/badge/Node-18%2B-339933?logo=nodedotjs&logoColor=white)](https://nodejs.org/)
+[![Claude plugin](https://img.shields.io/badge/Claude-plugin-d97757)](#quickstart)
+[![MCP: stdio](https://img.shields.io/badge/MCP-stdio-555)](https://modelcontextprotocol.io/)
+[![Shopify Admin GraphQL](https://img.shields.io/badge/Shopify-Admin%20GraphQL-95bf47?logo=shopify&logoColor=white)](https://shopify.dev/docs/api/admin-graphql)
+[![Dependencies: 0](https://img.shields.io/badge/dependencies-0-blue)](mcp/package.json)
 
----
+</div>
 
-## 1. Install the plugin
+Connect **any number of Shopify stores** to Claude at once. Every tool has to be told which
+store to act on, and it can only pick from the stores you've configured. So when you switch
+between projects, Claude can't quietly work on the wrong shop.
+
+```text
+You:     Show unfulfilled orders in keg-smiths from the last week.
+Claude:  → list_orders { "store": "keg-smiths", "query": "fulfillment_status:unfulfilled created_at:>=2026-10-03" }
+         keg-smiths has 3 unfulfilled orders from the last 7 days: …
+
+You:     Now archive everything tagged discontinued, in store-two.
+Claude:  → list_products   { "store": "store-two", "query": "tag:discontinued" }
+         → update_product  { "store": "store-two", "id": "…", "status": "ARCHIVED" }  ×4
+
+You:     Do the same in my-other-shop.
+Claude:  my-other-shop isn't a configured store (configured: keg-smiths, store-two).
+         Want to connect it with add_store?
+```
+<sub>The transcript above is illustrative. The tool names and the required `store` argument match the server's real tool schema.</sub>
+
+## Features
+
+- **The store guardrail.** On every store tool, `store` is a required argument whose JSON-schema `enum` is your configured store names. Claude can't skip naming a store, and it can't make one up.
+- **Credentials handled for you.** You give it a Dev Dashboard client ID and secret (`shpss_…`) once. The connector mints 24-hour access tokens with the OAuth client-credentials grant and renews them on its own. Legacy `shpat_` tokens work too.
+- **Add stores from chat.** `add_store` checks the credentials against Shopify, then saves them. The new store works right away, with no restart.
+- **No dependencies.** It's a plain Node 18+ MCP server that speaks stdio JSON-RPC directly. There's no `npm install` and no `node_modules`.
+- **19 tools.** Shop, products, orders, customers, collections and inventory, plus raw `graphql_query` / `graphql_mutation` for everything else (still scoped to a store).
+- **Never shows a token.** Tools don't echo credentials back, and `list_stores` returns names and domains only.
+
+## Quickstart
+
+### 1. Install the plugin
 
 In Claude, add this repo as a marketplace, then install the plugin from it:
 
 ```bash
 /plugin marketplace add JuicedSystems/claude-shopify-multi-store
-```
-
-```bash
 /plugin install shopify-multi-store@juiced-systems
-```
-
-```bash
 /reload-plugins
 ```
 
 > Requires Node.js 18+ on your PATH (`node --version`).
->
-> Developing locally instead? Point the marketplace at your local checkout:
+> Developing locally? Point the marketplace at your checkout instead:
 > `/plugin marketplace add ./claude-shopify-multi-store`
 
-## 2. Get credentials for each store (2026 flow)
+### 2. Get credentials for each store (2026 flow)
 
 As of **Jan 1, 2026** Shopify deprecated the old "Develop apps → reveal `shpat_` token" flow.
 Apps are now built in the **Dev Dashboard**, which gives you a **Client ID** and **Client
@@ -66,7 +85,7 @@ For **each** store:
 > **Already have a legacy `shpat_` token?** That still works — put it in `adminAccessToken`
 > instead of the client ID/secret.
 
-## 3. Add your stores
+### 3. Add your stores
 
 **The easy way — just tell Claude (no files to touch):**
 
@@ -126,7 +145,7 @@ Field notes:
 
 Restart Claude (or `/reload-plugins`) after editing the file — it's read at startup.
 
-## 4. Use it
+## Usage
 
 Just tell Claude which store to work with:
 
@@ -135,9 +154,7 @@ Just tell Claude which store to work with:
 - *"Set inventory for SKU ABC-123 in **keg-smiths** to 40 at the main location."*
 - *"In **store-two**, archive every product tagged `discontinued`."*
 
-Or drive the slash commands: `/shopify-stores`, `/shopify-setup`.
-
----
+Slash commands: `/shopify-stores` (list what's configured), `/shopify-setup` (guided connect).
 
 ## Tools
 
@@ -166,7 +183,31 @@ Or drive the slash commands: `/shopify-stores`, `/shopify-setup`.
 Anything the helpers don't cover is reachable through `graphql_query` / `graphql_mutation`,
 still scoped to a required `store`.
 
-## How auth works (and why no full OAuth redirect)
+## How it works
+
+```mermaid
+flowchart LR
+    U["You in Claude"] --> C["Claude"]
+    C -- "tools/call<br/>store: enum of configured names" --> S["MCP server<br/>mcp/server.js (stdio)"]
+    S --> K["Config<br/>~/.shopify-multi-store/stores.json"]
+    S --> T{"Token cache<br/>per store"}
+    T -- "expired / missing" --> O["POST /admin/oauth/access_token<br/>client_credentials grant"]
+    O --> T
+    T --> G["Admin GraphQL<br/>https://{shop}/admin/api/{version}/graphql.json"]
+    G --> A["keg-smiths"]
+    G --> B["store-two"]
+    G --> N["…any number"]
+```
+
+1. At startup, and after every `add_store` / `remove_store`, the server loads `stores.json`
+   and rewrites the `store` enum on every tool schema.
+2. On a tool call it looks up the named store. If the store isn't configured, the call
+   fails with the list of valid names.
+3. It gets a token: either a cached client-credentials token (renewed about 2 minutes
+   before it expires) or the legacy `shpat_` token. Then it calls that store's Admin
+   GraphQL endpoint.
+
+### Auth: why there's no OAuth redirect
 
 This uses Shopify's **client credentials grant** — a server-to-server OAuth flow meant
 specifically for *apps your organization owns, installed in stores you own*. There's no login
@@ -177,6 +218,22 @@ handles tokens forever after.
 
 The full authorization-code OAuth flow is only needed if you distribute a public app that
 *other people* install on *their* stores — not the case here.
+
+## Configuration
+
+| Field / setting | Where | Notes |
+|---|---|---|
+| `stores[].name` | `stores.json` | Short, unique, kebab-case. Becomes a value in the `store` enum |
+| `stores[].label` | `stores.json` | Optional human-readable name |
+| `stores[].shopDomain` | `stores.json` | `*.myshopify.com`; protocol and paths are stripped |
+| `stores[].clientId` + `clientSecret` | `stores.json` | Preferred (2026+): Dev Dashboard app credentials |
+| `stores[].adminAccessToken` | `stores.json` | Legacy `shpat_` token, instead of client ID/secret |
+| `stores[].apiVersion` | `stores.json` | Per-store override of `defaultApiVersion` |
+| `defaultApiVersion` | `stores.json` | e.g. `2025-10` |
+| `SHOPIFY_STORES_CONFIG` | env var | Override the config file location |
+
+Default config path: `~/.shopify-multi-store/stores.json` (Windows:
+`C:\Users\<you>\.shopify-multi-store\stores.json`). See [`stores.example.json`](stores.example.json).
 
 ## Security
 
@@ -194,3 +251,33 @@ The full authorization-code OAuth flow is only needed if you distribute a public
 - **A field/mutation errors about the API version** — set a newer `apiVersion` for that store
   (Shopify ships quarterly versions like `2025-10`, `2026-01`).
 - **New store not showing up** — the config is read at startup; `/reload-plugins` or restart.
+
+## Development
+
+```bash
+cd mcp
+npm test     # syntax-checks the server and runs an offline stdio smoke test
+```
+
+The smoke test ([`mcp/test/smoke.mjs`](mcp/test/smoke.mjs)) starts the server with a
+throwaway two-store config. It checks the MCP handshake and the tool list, and confirms
+that every store tool requires `store` with exactly the configured names. CI runs it on
+Node 18, 20 and 22.
+
+## Contributing
+
+Issues and pull requests are welcome. Useful contributions include new helper tools
+(keep them store-scoped), fixes for Shopify API version changes, and bug reports with
+the exact error a tool returned. Please run `npm test` in `mcp/` before opening a PR.
+
+## License
+
+[MIT](LICENSE) © 2026 Juiced Systems
+
+---
+
+<div align="center">
+
+Built by **Dylan Smith** / [Juiced Systems](https://github.com/JuicedSystems) · [dielawn.com](https://dielawn.com)
+
+</div>
