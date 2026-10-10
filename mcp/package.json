@@ -11,6 +11,7 @@
     "node": ">=18"
   },
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "test": "node --check server.js && node --check lib/config.js && node --check lib/shopify.js && node test/smoke.mjs"
   }
 }
